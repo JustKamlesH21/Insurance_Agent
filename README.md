@@ -66,6 +66,12 @@ Without an `OLLAMA_API_KEY`, or if the API call fails, extraction falls back to 
 }
 ```
 
+## Architecture
+
+<p align="center">
+  <picture><source media="(max-width: 767px)" srcset="assets/readme/architecture-m.svg"><img src="assets/readme/architecture.svg" width="100%" alt="Architecture. input: FNOL file, Streamlit / CLI; extract: Ollama Cloud, Regex fallback, schema.py; decide · router.py: Missing fields, Route rules; output: JSON result, claims_log.xlsx"></picture>
+</p>
+
 ## Sample claims
 
 `sample_fnols/` has 10 documents, one or more per route, including the edge cases: damage of exactly ₹25,000 (Standard Review), just under it (Fast-track), injury plus fraud wording (Investigation wins), and upper-case keywords. With the LLM switched off, all 10 route as their file names say. To check them yourself:
