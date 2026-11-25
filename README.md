@@ -1,122 +1,61 @@
-# FNOL Claims Routing Agent
+<p align="center">
+  <img src="assets/readme/banner.svg" width="100%" alt="FNOL Claims Agent: reads a first notice of loss, finds missing fields and sends the claim to the right queue with a one-line reason.">
+</p>
 
-A lightweight agent that extracts key fields from FNOL (First Notice of Loss)
-documents, detects missing/inconsistent data, and routes the claim to the
-correct workflow with a human-readable explanation.
+<p align="center">
+  <img src="https://img.shields.io/badge/sample%20claims-10%2F10%20routed-6E9A3C?style=flat-square" alt="10 of 10 sample claims routed as expected">
+  <img src="https://img.shields.io/badge/LLM-Ollama%20Cloud-8A3B6E?style=flat-square" alt="Ollama Cloud">
+  <img src="https://img.shields.io/github/last-commit/JustKamlesH21/Insurance_Agent?style=flat-square&color=F2A541" alt="Last commit">
+</p>
 
-## Why this counts as an "agent"
+A First Notice of Loss (FNOL) is the first report of an insurance claim, and it rarely arrives in a tidy format. This agent reads one, pulls out the fields an insurer needs, lists what is missing, and routes the claim to the right queue with a plain reason such as *"Routed to Fast-track because estimated damage (₹12,500.00) is below the ₹25,000 threshold and no other flags were triggered."*
 
-Field extraction uses a local LLM (Ollama, `gpt-oss` model) rather than fixed
-templates — this lets it understand FNOL documents with varying wording and
-layout, not just one exact format. That's the "understanding" part of the
-agent.
+The split of work is the point. An LLM does the reading, because FNOL wording and layout vary. Plain Python makes the routing decision, so the same claim always gets the same route, every decision traces back to one rule, and the agent keeps working when the LLM is down.
 
-**Routing itself is deterministic Python, not the LLM.** This is a deliberate
-design choice:
-- Same input always produces the same route (no randomness/hallucination in
-  a business-critical decision).
-- The system keeps working correctly even if Ollama is down — it falls back
-  to regex-based extraction automatically, and the demo never breaks.
-- Every routing decision is traceable to one exact rule, which is what makes
-  the "reasoning" output trustworthy rather than a vague LLM guess.
+<p align="center">
+  <img src="assets/readme/proof.svg" width="100%" alt="In numbers: 10 of 10 sample claims routed as expected with the LLM off; 5 routes, first match wins; fast-track limit 25,000 rupees.">
+</p>
 
-## Excel Claims Log
-
-Every processed claim is automatically logged to `claims_log.xlsx` (created
-in the project folder on first run). Each row is keyed by **Policy Number**:
-
-- New policy number → a new row is appended.
-- Same policy number processed again → the existing row is **updated**, not duplicated.
-
-Columns include every extracted field plus Missing Fields, Recommended
-Route, Reasoning, Extraction Method (llm/regex_fallback), and a timestamp —
-giving a full audit trail of every routing decision and why it was made.
-
-Logging failures (e.g. the file is open in Excel and locked) never break
-the agent — the JSON result is always returned regardless.
-
-## Project Structure
-
-```
-fnol_agent/
-├── schema.py         # Pydantic schema for all required fields
-├── llm_client.py      # Ollama Cloud API wrapper (with timeout + failure handling)
-├── extractor.py       # LLM extraction + regex fallback
-├── router.py          # Missing-field detection + routing rule engine
-├── excel_logger.py    # Logs every processed claim to claims_log.xlsx (upsert by policy number)
-├── pipeline.py         # Orchestrates the full flow, CLI entry point
-├── app.py             # Streamlit UI for demoing
-├── requirements.txt
-├── .env.example        # Template for your OLLAMA_API_KEY
-└── sample_fnols/       # 4 dummy FNOL docs, one per routing outcome
-    ├── claim1_fasttrack.txt
-    ├── claim2_missingfields.txt
-    ├── claim3_investigation.txt
-    └── claim4_injury.txt
-```
-
-## 📖 Full Guide
-
-See **`GUIDE.md`** for a complete walkthrough: architecture diagram, what
-each file does, why routing never depends on the LLM, the full routing
-priority table, and verified test results for all 10 sample cases.
-
-## Running Tests
+## Quick start
 
 ```bash
-python3 test_runner.py
-```
-Runs all 10 sample FNOL documents and prints a pass/fail table comparing
-actual vs. expected routing — useful to run right before a demo.
-
-## Setup
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
+git clone https://github.com/JustKamlesH21/Insurance_Agent.git
+cd Insurance_Agent
+python -m venv .venv && source .venv/bin/activate      # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-cp .env.example .env
+cp .env.example .env                                   # add OLLAMA_API_KEY (optional)
+streamlit run app.py
 ```
 
-This project uses **Ollama Cloud API** for extraction (no local model download
-or `ollama serve` needed):
-
-1. Get an API key from https://ollama.com/settings/keys
-2. Copy `.env.example` to `.env` and fill in your values:
-   ```bash
-   cp .env.example .env
-   ```
-3. Update the values in `.env` before running the app.
-4. Check `llm_client.py` — `MODEL_NAME` is set to `"gpt-oss:120b-cloud"`. Update
-   this to match the exact cloud model tag available in your account if different.
-
-If the key isn't set, or the API call fails for any reason, extraction
-automatically falls back to regex parsing — the pipeline never crashes.
-
-## Running via CLI
+Upload any file from `sample_fnols/` (or your own `.txt` or `.pdf`) and click **Process Claim**. From the command line:
 
 ```bash
 python pipeline.py sample_fnols/claim1_fasttrack.txt
 ```
 
-## Running the UI
+Without an `OLLAMA_API_KEY`, or if the API call fails, extraction falls back to regex parsing and the pipeline still returns a full result.
 
-```bash
-streamlit run app.py
-```
+## How it works
 
-Then upload any file from `sample_fnols/` (or a real FNOL .txt/.pdf) and
-click "Process Claim".
+<p align="center">
+  <img src="assets/readme/how-it-works.svg" width="100%" alt="How it works: an FNOL file is read by the LLM with a regex fallback, then router.py sends it to one of five routes: Manual Review, Investigation Flag, Specialist Queue, Fast-track or Standard Review.">
+</p>
 
-## Routing Rules (priority order, first match wins)
+**Extract.** `extractor.py` sends the document to `gpt-oss:120b-cloud` on Ollama Cloud (60 s timeout) and validates the reply against the Pydantic schema in `schema.py`. On any failure it uses regex instead. The result records which method ran.
 
-1. **Manual Review** — any mandatory field is missing.
-2. **Investigation Flag** — description contains "fraud", "inconsistent", or "staged".
-3. **Specialist Queue** — claim type is "injury".
-4. **Fast-track** — estimated damage < ₹25,000.
-5. **Standard Review** — fallback if none of the above apply.
+**Check.** `router.py` lists any of the 16 mandatory fields that are empty (policy number, policyholder, dates, location, description, claimant, damage estimate and so on; the full list is `MANDATORY_FIELDS` in `schema.py`).
 
-## Output Format
+**Route.** The first matching rule wins:
+
+| # | Route | When |
+|---|---|---|
+| 1 | Manual Review | any mandatory field is missing |
+| 2 | Investigation Flag | the description contains "fraud", "inconsistent" or "staged" (any case) |
+| 3 | Specialist Queue | the claim type is "injury" |
+| 4 | Fast-track | estimated damage is below ₹25,000 |
+| 5 | Standard Review | everything else |
+
+**Log.** Every claim is written to `claims_log.xlsx`, one row per policy number: a new policy adds a row, the same policy again updates it. A locked Excel file never stops the agent; the JSON result is returned regardless.
 
 ```json
 {
@@ -127,10 +66,32 @@ click "Process Claim".
 }
 ```
 
-## Reliability Notes
+## Sample claims
 
-- If the API key is missing, the Ollama Cloud API is unreachable, or it
-  returns invalid JSON, extraction automatically falls back to regex
-  parsing — the pipeline never crashes or returns empty output.
-- Routing and missing-field detection never call the LLM, so they are 100%
-  deterministic and testable.
+`sample_fnols/` has 10 documents, one or more per route, including the edge cases: damage of exactly ₹25,000 (Standard Review), just under it (Fast-track), injury plus fraud wording (Investigation wins), and upper-case keywords. With the LLM switched off, all 10 route as their file names say. To check them yourself:
+
+```bash
+python -c "import glob, pipeline; [print(f, '->', pipeline.run_fnol_agent_from_file(f)['recommendedRoute']) for f in sorted(glob.glob('sample_fnols/*.txt'))]"
+```
+
+Each run also updates `claims_log.xlsx`. [GUIDE.md](GUIDE.md) walks through every file, the routing priority and the expected result for each sample.
+
+## Project layout
+
+| File | What it does |
+|---|---|
+| `schema.py` | Pydantic schema and the list of mandatory fields |
+| `llm_client.py` | Ollama Cloud call with timeout and failure handling |
+| `extractor.py` | LLM extraction with the regex fallback |
+| `router.py` | Missing-field check and the routing rules |
+| `excel_logger.py` | Upserts each claim into `claims_log.xlsx` |
+| `pipeline.py` | Runs the whole flow; CLI entry point |
+| `app.py` | Streamlit demo |
+
+## License
+
+No license file has been added yet, so default copyright applies.
+
+<p align="center">
+  <a href="https://github.com/JustKamlesH21"><img src="assets/readme/footer.svg" width="100%" alt="Part of Kamlesh OS. More projects on github.com/JustKamlesH21"></a>
+</p>
