@@ -16,6 +16,10 @@ The split of work is the point. An LLM does the reading, because FNOL wording an
   <picture><source media="(max-width: 767px)" srcset="assets/readme/proof-m.svg"><img src="assets/readme/proof.svg" width="100%" alt="In numbers: 10 of 10 sample claims routed as expected with the LLM off; 5 routes, first match wins; fast-track limit 25,000 rupees."></picture>
 </p>
 
+<p align="center">
+  <picture><source media="(max-width: 767px)" srcset="assets/readme/glance-m.svg"><img src="assets/readme/glance.svg" width="100%" alt="At a glance. Built: Jul 2026; Stack: Ollama Cloud · Pydantic · Streamlit; Status: 10 of 10 sample claims routed correctly"></picture>
+</p>
+
 ## Quick start
 
 ```bash
