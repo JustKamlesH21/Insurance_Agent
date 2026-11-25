@@ -1,5 +1,5 @@
 <p align="center">
-  <picture><source media="(max-width: 767px)" srcset="assets/readme/banner-m.svg"><img src="assets/readme/banner.svg" width="100%" alt="FNOL Claims Agent: reads a first notice of loss, finds missing fields and sends the claim to the right queue with a one-line reason."></picture>
+  <picture><source media="(max-width: 767px)" srcset="assets/readme/banner-m.png"><img src="assets/readme/banner.svg" width="100%" alt="FNOL Claims Agent: reads a first notice of loss, finds missing fields and sends the claim to the right queue with a one-line reason."></picture>
 </p>
 
 <p align="center">
@@ -13,11 +13,11 @@ A First Notice of Loss (FNOL) is the first report of an insurance claim, and it 
 The split of work is the point. An LLM does the reading, because FNOL wording and layout vary. Plain Python makes the routing decision, so the same claim always gets the same route, every decision traces back to one rule, and the agent keeps working when the LLM is down.
 
 <p align="center">
-  <picture><source media="(max-width: 767px)" srcset="assets/readme/proof-m.svg"><img src="assets/readme/proof.svg" width="100%" alt="In numbers: 10 of 10 sample claims routed as expected with the LLM off; 5 routes, first match wins; fast-track limit 25,000 rupees."></picture>
+  <picture><source media="(max-width: 767px)" srcset="assets/readme/proof-m.png"><img src="assets/readme/proof.svg" width="100%" alt="In numbers: 10 of 10 sample claims routed as expected with the LLM off; 5 routes, first match wins; fast-track limit 25,000 rupees."></picture>
 </p>
 
 <p align="center">
-  <picture><source media="(max-width: 767px)" srcset="assets/readme/glance-m.svg"><img src="assets/readme/glance.svg" width="100%" alt="At a glance. Built: Jul 2026; Stack: Ollama Cloud · Pydantic · Streamlit; Status: 10 of 10 sample claims routed correctly"></picture>
+  <picture><source media="(max-width: 767px)" srcset="assets/readme/glance-m.png"><img src="assets/readme/glance.svg" width="100%" alt="At a glance. Built: Jul 2026; Stack: Ollama Cloud · Pydantic · Streamlit; Status: 10 of 10 sample claims routed correctly"></picture>
 </p>
 
 ## Quick start
@@ -42,7 +42,7 @@ Without an `OLLAMA_API_KEY`, or if the API call fails, extraction falls back to 
 ## How it works
 
 <p align="center">
-  <picture><source media="(max-width: 767px)" srcset="assets/readme/how-it-works-m.svg"><img src="assets/readme/how-it-works.svg" width="100%" alt="How it works: an FNOL file is read by the LLM with a regex fallback, then router.py sends it to one of five routes: Manual Review, Investigation Flag, Specialist Queue, Fast-track or Standard Review."></picture>
+  <picture><source media="(max-width: 767px)" srcset="assets/readme/how-it-works-m.png"><img src="assets/readme/how-it-works.svg" width="100%" alt="How it works: an FNOL file is read by the LLM with a regex fallback, then router.py sends it to one of five routes: Manual Review, Investigation Flag, Specialist Queue, Fast-track or Standard Review."></picture>
 </p>
 
 **Extract.** `extractor.py` sends the document to `gpt-oss:120b-cloud` on Ollama Cloud (60 s timeout) and validates the reply against the Pydantic schema in `schema.py`. On any failure it uses regex instead. The result records which method ran.
@@ -73,7 +73,7 @@ Without an `OLLAMA_API_KEY`, or if the API call fails, extraction falls back to 
 ## Architecture
 
 <p align="center">
-  <picture><source media="(max-width: 767px)" srcset="assets/readme/architecture-m.svg"><img src="assets/readme/architecture.svg" width="100%" alt="Architecture. input: FNOL file, Streamlit / CLI; extract: Ollama Cloud, Regex fallback, schema.py; decide · router.py: Missing fields, Route rules; output: JSON result, claims_log.xlsx"></picture>
+  <picture><source media="(max-width: 767px)" srcset="assets/readme/architecture-m.png"><img src="assets/readme/architecture.svg" width="100%" alt="Architecture. input: FNOL file, Streamlit / CLI; extract: Ollama Cloud, Regex fallback, schema.py; decide · router.py: Missing fields, Route rules; output: JSON result, claims_log.xlsx"></picture>
 </p>
 
 ## Sample claims
@@ -103,5 +103,5 @@ Each run also updates `claims_log.xlsx`. [GUIDE.md](GUIDE.md) walks through ever
 No license file has been added yet, so default copyright applies.
 
 <p align="center">
-  <a href="https://github.com/JustKamlesH21"><picture><source media="(max-width: 767px)" srcset="assets/readme/footer-m.svg"><img src="assets/readme/footer.svg" width="100%" alt="Part of Kamlesh OS. More projects on github.com/JustKamlesH21"></picture></a>
+  <a href="https://github.com/JustKamlesH21"><picture><source media="(max-width: 767px)" srcset="assets/readme/footer-m.png"><img src="assets/readme/footer.svg" width="100%" alt="Part of Kamlesh OS. More projects on github.com/JustKamlesH21"></picture></a>
 </p>
